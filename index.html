@@ -1,9 +1,139 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <style type="text/css">
+    body {
+        background: #eee;
+        font-family: Helvetica, Verdana, sans-serif;
+    }
+    form {
+        text-align: center;
+    }
+    h2 {
+        margin-top: 0;
+    }
+    table {
+        margin: 20px auto;
+    }
+    td {
+        padding: 15px;
+        background: #fff;
+        vertical-align: top;
+        width: 50%;
+    }
+    #log, #response {
+        border-top: 1px solid #eee;
+        display: block;
+        min-width: 30em;
+    }
+    #log {
+        min-width: 15em;
+    }
+    #response {
+        padding: 15px;
+    }
+    .date {
+        font-size: 0.8em;
+        color: #ccc;
+        width: 25%;
+    }
+    </style>
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script src="ajax-retry.js"></script>
     <title>AjaxRetry Demo</title>
 </head>
 <body>
+
+<!-- Choose HTTP Status Code -->
+<form>
+    <input id="max_tries" type="number" min="0" max="10" value="3">
+    <input id="interval" type="number" min="0" max="10000" value="1000">
+    <input id="status_code" type="number" min="100" max="599" value="400">
+    <input type="submit" value="Go">
+</form>
+
+
+<table>
+    <tr>
+        <td>
+            <h2>Log</h2>
+            <table id="log"></table>
+        </td>
+        <td>
+            <h2>Response</h2>
+            <pre><code id="response"></code></pre>
+        </td>
+    </tr>
+</table>
+
+<script type="text/javascript">
+var maxTries, interval, statusCode, url,
+    maxTriesInput = $("#max_tries"),
+    intervalInput = $("#interval"),
+    statusCodeInput = $("#status_code"),
+    baseUrl = "https://httpbin.org/status/";
+
+$("form").on("submit", function(evt){
+    evt.preventDefault();
+
+    maxTries = Number(maxTriesInput.val());
+    interval = Number(intervalInput.val());
+    statusCode = Number(statusCodeInput.val());
+    url = statusCode == 200 ? "https://httpbin.org/get" : baseUrl + statusCode;
+    // url = baseUrl + statusCode;
+
+    clearLogs();
+    addLog("Beginning the request...");
+
+    // Make your request as usual! Just add `maxTries`, `interval`, and `onRetry`.
+    $.ajax({
+        url: url,
+        data: {
+            foo: "bar"
+        },
+        maxTries: maxTries,
+        interval: interval,
+        onRetry: function () {
+            var msg = "Request failed. Retrying...";
+            addLog(msg);
+        }
+    }).done(function(data){
+        addLog("Request succeeded!");
+        showResponse(data);
+    }).fail(function(error){
+        addLog("Request failed after " + maxTries + " tries.");
+        showResponse(error);
+    });
+});
+
+function showResponse(response) {
+    var prettified;
+    if (response == "") {
+        prettified = "(Empty response)";
+    } else {
+        prettified = JSON.stringify(response, null, 4);    
+    }
+    $("#response").html(prettified);
+}
+
+function clearLogs() {
+    $("#log").html("");
+    $("#response").html("");
+}
+
+function addLog(msg) {
+    var entry = $("<tr>")
+        .append($("<td>", {
+            "text": new Date().toLocaleTimeString(),
+            "class": "date"
+        }))
+        .append($("<td>", {
+            text: msg
+        }));
+    $("#log").append(entry);
+}
+
+</script>
 
 </body>
 </html>
