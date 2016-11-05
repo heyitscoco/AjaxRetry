@@ -9,6 +9,9 @@
     form {
         text-align: center;
     }
+    input {
+        font-size: inherit;
+    }
     h2 {
         margin-top: 0;
     }
@@ -46,10 +49,16 @@
 
 <!-- Choose HTTP Status Code -->
 <form>
+    <label for="max_tries">Max Tries:</label>
     <input id="max_tries" type="number" min="0" max="10" value="3">
+    
+    <label for="interval">Interval:</label>
     <input id="interval" type="number" min="0" max="10000" value="1000">
+    
+    <label for="status_code">Status Code:</label>
     <input id="status_code" type="number" min="100" max="599" value="400">
-    <input type="submit" value="Go">
+
+    <input type="submit" value="Go!">
 </form>
 
 
