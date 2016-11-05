@@ -6,6 +6,7 @@ $(function(){
         var defaults = {
             maxTries: 0,
             interval: 0,
+            beforeRetry: function(){},
             onRetry: function(){}
         }
         settings = $.extend({}, defaults, settings);
@@ -17,6 +18,7 @@ $(function(){
         var completedTries = 0;
         var maxTries = typeof settings.maxTries === "number" ? settings.maxTries : 0;
         var interval = typeof settings.interval === "number" ? settings.interval : 0;
+        var beforeRetry = settings.beforeRetry;
         var onRetry = settings.onRetry;
 
         return tryAjax().promise();
@@ -31,8 +33,9 @@ $(function(){
                 .fail(function(error) {
                     completedTries++;
                     if (completedTries < maxTries) {
-                        onRetry();
+                        beforeRetry();
                         setTimeout(function(){
+                            onRetry();
                             tryAjax(d);
                         }, interval);
                     } else {
